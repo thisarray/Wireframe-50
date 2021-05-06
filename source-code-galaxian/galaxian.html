@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+
+<html lang="en-US">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>galaxian</title>
+  <script src="../../jsgame0.js"></script>
+  <style type="text/css" media="screen">
+body {
+  background-color: white;
+  color: black;
+}
+.hidden {
+  display: none;
+}
+#original {
+  margin-left: 1em;
+}
+  </style>
+</head>
+
+<body>
+<section id="imageLoader" class="hidden">
+  <img class="hidden" src="images/alien0.png" alt="alien0" data-name="alien0">
+  <img class="hidden" src="images/alien1.png" alt="alien1" data-name="alien1">
+  <img class="hidden" src="images/alien2.png" alt="alien2" data-name="alien2">
+  <img class="hidden" src="images/alien3.png" alt="alien3" data-name="alien3">
+  <img class="hidden" src="images/alien4.png" alt="alien4" data-name="alien4">
+  <img class="hidden" src="images/background.png" alt="background" data-name="background">
+  <img class="hidden" src="images/bullet.png" alt="bullet" data-name="bullet">
+  <img class="hidden" src="images/ship.png" alt="ship" data-name="ship">
+  <img class="hidden" src="images/stars.png" alt="stars" data-name="stars">
+</section>
+
+<main>
+<h1>galaxian</h1>
+
+<canvas id="screen">
+The game screen appears here if your browser supports the Canvas API.
+</canvas>
+<section id="controls">
+  <button type="button" id="reset">Reset</button>
+  <button type="button" id="pause">Pause</button>
+</section>
+
+<h2>Attribution</h2>
+
+<p><a href="https://wireframe.raspberrypi.org/issues/50">Recreate Galaxian's iconic attack patterns, pages 64-65, by Mark Vanstone</a>.</p>
+
+<p>Licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/legalcode">Creative Commons Attribution-NonCommercial-ShareAlike 3.0 Unported</a>.</p>
+
+<h2>Original Python code</h2>
+
+<pre id="original"><code>
+# Galaxian
+from random import randint
+WIDTH = 600
+HEIGHT = 800
+
+bullet = Actor(&#x27;bullet&#x27;, center=(0, -10))
+ship = Actor(&#x27;ship&#x27;, center=(300, 700))
+backY = count = gameover = 0
+aliens = []
+for a in range(0, 8):
+    aliens.append(Actor(&#x27;alien0&#x27;, center=(200+(a*50),200)))
+    aliens[a].status = 0
+    aliens[a].side = int(a/4)
+
+for a in range(0, 8):
+    aliens.append(Actor(&#x27;alien0&#x27;, center=(200+(a*50),250)))
+    aliens[a+8].status = 0
+    aliens[a+8].side = int(a/4)
+
+def draw():
+    screen.blit(&quot;background&quot;, (0, 0))
+    screen.blit(&quot;stars&quot;, (0, backY))
+    screen.blit(&quot;stars&quot;, (0, backY-800))
+    bullet.draw()
+    drawAliens()
+    if gameover != 1 or (gameover == 1 and count%2 == 0): ship.draw()
+
+def update():
+    global backY, count
+    count += 1
+    if gameover == 0:
+        backY += 0.2
+        if backY &gt; 800: backY = 0
+        if bullet.y &gt; -10: bullet.y -= 5
+        if keyboard.left and ship.x &gt; 50 : ship.x -= 4
+        if keyboard.right and ship.x &lt; 550 : ship.x += 4
+        if keyboard.space :
+            if bullet.y &lt; 0: bullet.pos = (ship.x,700)
+        updateAliens()
+
+def drawAliens():
+    for a in range(0, 16):
+        if aliens[a].status &lt; 5 : aliens[a].draw();
+
+def updateAliens():
+    global gameover
+    for a in range(0, 16):
+        aliens[a].image = &quot;alien0&quot;
+        if count%30 &lt; 15 : aliens[a].image = &quot;alien1&quot;
+        if count%750 &lt; 375:
+            aliens[a].x -=0.4
+        else:
+            aliens[a].x +=0.4
+        if aliens[a].collidepoint(bullet.pos) and aliens[a].status &lt; 2:
+            aliens[a].status = 2
+            bullet.y = -10
+        if aliens[a].colliderect(ship) : gameover = 1
+        if randint(0,1000) == 1 and aliens[a].status == 0 : aliens[a].status = 1
+        if aliens[a].status == 1 : flyAlien(a)
+        if aliens[a].status &gt; 1 and aliens[a].status &lt; 5:
+            aliens[a].image = &quot;alien&quot; + str(aliens[a].status)
+            aliens[a].status += 1
+
+def flyAlien(a):
+    if aliens[a].side == 0:
+        if aliens[a].angle &lt; 180 :
+            aliens[a].angle += 2
+            aliens[a].x -= 1
+            if aliens[a].angle &lt; 90: aliens[a].y -= 1
+        if aliens[a].angle &gt;= 90 :
+            aliens[a].y += 2
+        if aliens[a].angle &gt;= 180 :
+            aliens[a].angle = 180
+            aliens[a].x += 1
+    else:
+        if aliens[a].angle &gt; -180 :
+            aliens[a].angle -= 2
+            aliens[a].x += 1
+            if aliens[a].angle &gt; -90: aliens[a].y -= 1
+        if aliens[a].angle &lt;= -90 :
+            aliens[a].y += 2
+        if aliens[a].angle &lt;= -180 :
+            aliens[a].angle = -180
+            aliens[a].x -= 1
+</code></pre>
+</main>
+
+<script>
+// Galaxian
+WIDTH = 600;
+HEIGHT = 800;
+
+var bullet, ship, backY, count, gameover, aliens;
+
+function reset() {
+  bullet = new Actor('bullet');
+  bullet.center = [0, -10];
+  ship = new Actor('ship');
+  ship.center = [300, 700];
+
+  backY = 0;
+  count = 0;
+  gameover = 0;
+
+  aliens = [];
+  for (let a = 0; a < 8; a++) {
+    let alien = new Actor('alien0');
+    alien.center = [200 + (a * 50), 200];
+    alien.status = 0;
+    alien.side = Math.trunc(a / 4);
+    aliens.push(alien);
+  }
+
+  for (let a = 0; a < 8; a++) {
+    let alien = new Actor('alien0');
+    alien.center = [200 + (a * 50), 250];
+    alien.status = 0;
+    alien.side = Math.trunc(a / 4);
+    aliens.push(alien);
+  }
+}
+
+function draw() {
+  screen.blit("background", [0, 0]);
+  screen.blit("stars", [0, backY]);
+  screen.blit("stars", [0, backY - 800]);
+  bullet.draw();
+  drawAliens();
+  if ((gameover !== 1) || ((gameover === 1) && ((count % 2) === 0))) {
+    ship.draw();
+  }
+}
+
+function update() {
+  count += 1;
+  if (gameover === 0) {
+    backY += 0.2;
+    if (backY > 800) {
+      backY = 0;
+    }
+    if (bullet.posy > -10) {
+      bullet.posy -= 5;
+    }
+    if (keyboard[keys.LEFT] && (ship.posx > 50)) {
+      ship.posx -= 4;
+    }
+    if (keyboard[keys.RIGHT] && (ship.posx < 550)) {
+      ship.posx += 4;
+    }
+    if (keyboard[keys.SPACE]) {
+      if (bullet.posy < 0) {
+        bullet.pos = [ship.posx, 700];
+      }
+    }
+    updateAliens();
+  }
+}
+
+function drawAliens() {
+  for (let a of aliens) {
+    if (a.status < 5) {
+      a.draw();
+    }
+  }
+}
+
+/*
+ * Return a random integer N such that min <= N < max.
+ */
+function getRandomInteger(min, max) {
+  min = Math.ceil(min);
+  max = Math.floor(max);
+  return Math.floor((Math.random() * (max - min)) + min);
+}
+
+function updateAliens() {
+  for (let a of aliens) {
+    a.name = "alien0";
+    if ((count % 30) < 15) {
+      a.name = "alien1";
+    }
+    if ((count % 750) < 375) {
+      a.posx -= 0.4;
+    }
+    else {
+      a.posx += 0.4;
+    }
+    if (a.collidepoint(bullet.pos) && (a.status < 2)) {
+      a.status = 2;
+      bullet.posy = -10;
+    }
+    if (a.colliderect(ship)) {
+      gameover = 1;
+    }
+    if ((getRandomInteger(0, 1001) === 1) && (a.status === 0)) {
+      a.status = 1;
+    }
+    if (a.status === 1) {
+      flyAlien(a);
+    }
+    if ((a.status > 1) && (a.status < 5)) {
+      a.name = "alien" + a.status;
+      a.status += 1;
+    }
+  }
+}
+
+function flyAlien(a) {
+  if (a.side === 0) {
+    if (a.angle < 180) {
+      a.angle += 2;
+      a.posx -= 1;
+      if (a.angle < 90) {
+        a.posy -= 1;
+      }
+    }
+    if (a.angle >= 90) {
+      a.posy += 2;
+    }
+    if (a.angle >= 180) {
+      a.angle = 180;
+      a.posx += 1;
+    }
+  }
+  else {
+    if (a.angle > -180) {
+      a.angle -= 2;
+      a.posx += 1;
+      if (a.angle > -90) {
+        a.posy -= 1;
+      }
+    }
+    if (a.angle <= -90) {
+      a.posy += 2;
+    }
+    if (a.angle <= -180) {
+      a.angle = -180;
+      a.posx -= 1;
+    }
+  }
+}
+
+window.addEventListener('load', (event) => {
+  images.LOAD('#imageLoader img');
+  reset();
+  screen.set_mode('#screen', '#reset', '#pause');
+});
+</script>
+</body>
+
+</html>
